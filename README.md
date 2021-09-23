@@ -1,3 +1,8 @@
+## HTTP øvingsoppgaver
+
+## HTTP Client
+
+* [ ]
 ## HTTP Server
 
 * [ ] HTTP Server should respond with 404

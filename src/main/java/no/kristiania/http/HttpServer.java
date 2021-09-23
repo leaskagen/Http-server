@@ -13,10 +13,13 @@ public class HttpServer {
 
         Socket clientSocket = serverSocket.accept();
 
-        String html = "Hello World";
+        String html = "<p>Hello World</p>";
+
+        String contentType = "text/html";
 
         String response = "HTTP/1.1 200 Morrapuler\r\n" +
-                "Content-length: " + html.length() + "\r\n" +
+                "Content-Type: " + contentType + "\r\n" +
+                "Content-Length: " + html.length() + "\r\n" +
                 "Connection: close \r\n" +
                 "\r\n" +
                 html;
