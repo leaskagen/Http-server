@@ -15,10 +15,20 @@ public class HttpServer {
 
     }
 
+    // En thread som kan ta i mot request fra client og gi svar til client samtidig
     private void handleClients() {
-        try {
+        try { // Try metoden vil lukke connection til porten når den er ferdig med å gi svar
             Socket clientSocket = serverSocket.accept();
-            String response = "HTTP/1.1 404 Not found\r\nContent-Length: 0\r\n\r\n";
+
+            String[] requestLine = HttpClient.readLine(clientSocket).split(" ");
+            String requestTarget = requestLine[1];
+            String responseText = "File not found: " + requestTarget;
+
+            String response = "HTTP/1.1 404 Not found\r\n" +
+                    "Content-Length: " + responseText.length() + "\r\n" +
+                    "\r\n" +
+                    responseText;
+
             clientSocket.getOutputStream().write(response.getBytes());
         } catch (IOException e){
             e.printStackTrace();
@@ -43,5 +53,9 @@ public class HttpServer {
                 html;
 
         clientSocket.getOutputStream().write(response.getBytes());
+    }
+
+    public int getPort() {
+        return serverSocket.getLocalPort();
     }
 }

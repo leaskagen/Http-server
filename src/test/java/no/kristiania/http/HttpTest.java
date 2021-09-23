@@ -43,7 +43,15 @@ public class HttpTest {
     @Test
     void shouldReturn404ForUnknownRequestTarget() throws IOException {
         HttpServer server = new HttpServer(6969);
-        HttpClient client = new HttpClient("localhost", 6969, "non-existing" );
+        HttpClient client = new HttpClient("localhost", server.getPort(), "non-existing" );
         assertEquals(404, client.getStatusCode());
     }
+
+    @Test
+    void shouldRespondWithRequestTargetIn404() throws IOException {
+        HttpServer server = new HttpServer(6969);
+        HttpClient client = new HttpClient("localhost", server.getPort(), "non-existing" );
+        assertEquals("File not found: /non-existing", client.getMessageBody());
+    }
+
 }
