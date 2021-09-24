@@ -3,10 +3,14 @@ package no.kristiania.http;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class HttpServer {
 
     private final ServerSocket serverSocket;
+    private Path rootDirectory;
 
     public HttpServer(int serverPort) throws IOException {
         serverSocket = new ServerSocket(serverPort);
@@ -22,40 +26,56 @@ public class HttpServer {
 
             String[] requestLine = HttpClient.readLine(clientSocket).split(" ");
             String requestTarget = requestLine[1];
-            String responseText = "File not found: " + requestTarget;
 
-            String response = "HTTP/1.1 404 Not found\r\n" +
-                    "Content-Length: " + responseText.length() + "\r\n" +
-                    "\r\n" +
-                    responseText;
+            if( requestTarget.equals("/hello")){
+                String responseText = "Hello world";
 
-            clientSocket.getOutputStream().write(response.getBytes());
+                String response = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Length: " + responseText.length() + "\r\n" +
+                        "Content-Type: text/html\r\n" +
+                        "\r\n" +
+                        responseText;
+
+                clientSocket.getOutputStream().write(response.getBytes());
+            } else {
+                if(rootDirectory != null && Files.exists(rootDirectory.resolve(requestTarget.substring(1)))){
+                    String responseText = Files.readString(rootDirectory.resolve(requestTarget.substring(1)));
+
+                    String response = "HTTP/1.1 200 OK\r\n" +
+                            "Content-Length: " + responseText.length() + "\r\n" +
+                            "Content-Type: text/html\r\n" +
+                            "\r\n" +
+                            responseText;
+
+                    clientSocket.getOutputStream().write(response.getBytes());
+                }
+
+
+                String responseText = "File not found: " + requestTarget;
+
+                String response = "HTTP/1.1 404 Not found\r\n" +
+                        "Content-Length: " + responseText.length() + "\r\n" +
+                        "\r\n" +
+                        responseText;
+
+                clientSocket.getOutputStream().write(response.getBytes());
+            }
+
         } catch (IOException e){
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) throws IOException {
-
-        ServerSocket serverSocket = new ServerSocket(6969);
-
-        Socket clientSocket = serverSocket.accept();
-
-        String html = "<p>Hello World</p>";
-
-        String contentType = "text/html";
-
-        String response = "HTTP/1.1 200 Morrapuler\r\n" +
-                "Content-Type: " + contentType + "\r\n" +
-                "Content-Length: " + html.length() + "\r\n" +
-                "Connection: close \r\n" +
-                "\r\n" +
-                html;
-
-        clientSocket.getOutputStream().write(response.getBytes());
+        HttpServer httpServer = new HttpServer(6969);
+        httpServer.setRoot(Paths.get("."));
     }
 
     public int getPort() {
         return serverSocket.getLocalPort();
+    }
+
+    public void setRoot(Path rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 }
